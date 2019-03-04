@@ -48,6 +48,12 @@ init(nil: ref Draw->Context, argv: list of string) {
 			if(c != 2)
 				raise "too many d's ­ " + hd argv;
 
+			if(int hd fields < 1 || int hd tl fields < 1)
+				raise "values must be ≥1";
+
+			if(int hd tl fields == 1 && exploding)
+				raise "exploding d1 is ∞";
+
 			toroll = Die(int hd fields, int hd tl fields) :: toroll;
 		}
 	}
