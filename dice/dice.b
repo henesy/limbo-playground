@@ -85,6 +85,8 @@ init(nil: ref Draw->Context, argv: list of string) {
 
 	out.flush();
 	out.close();
+
+	exit;
 }
 
 # Roll a die
