@@ -5,6 +5,7 @@ include "draw.m";
 include "arg.m";
 include "keyring.m";	# required by security.m
 include "security.m";
+include "bufio.m";
 
 sys: Sys;
 arg: Arg;
@@ -46,7 +47,7 @@ init(nil: ref Draw->Context, argv: list of string) {
 		for(; argv != nil; argv = tl argv) {
 			(c, fields) := sys->tokenize(hd argv, "d");
 			if(c != 2)
-				raise "too many d's ­ " + hd argv;
+				raise "bad number of d's ­ " + hd argv;
 
 			if(int hd fields < 1 || int hd tl fields < 1)
 				raise "values must be ≥1";
@@ -64,20 +65,35 @@ init(nil: ref Draw->Context, argv: list of string) {
 # Roll all of the die
 roll() {
 	random := load Random Random->PATH;
+	bufio := load Bufio Bufio->PATH;
+	Iobuf: import bufio;
+
+	out := bufio->open("/fd/1", bufio->OWRITE);
 
 	for(; toroll != nil; toroll = tl toroll) {
 		d := hd toroll;
-		sys->print("%dd%d: ", d.n, d.m);
+
+		str := sys->sprint("%dd%d: ", d.n, d.m);
+		out.write(array of byte str, len str);
+
 		count := d.n;
 		for(i := 0; i < count; i++) {
 			r := abs(random->randomint(random->ReallyRandom) % d.m) + 1;
 			if(exploding)
 				if(r == d.m)
 					count++;
-			sys->print("%d ", r);
+
+			str = sys->sprint("%d ", r);
+			out.write(array of byte str, len str);
+			out.flush();
 		}
-		sys->print("\n");
+
+		str = sys->sprint("\n");
+		out.write(array of byte str, len str);
 	}
+
+	out.flush();
+	out.close();
 }
 
 # Return absolute value
