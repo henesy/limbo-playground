@@ -21,11 +21,14 @@ Die: adt {
 
 exploding: int = 0;
 toroll: list of Die;
+ndice: int = 0;
+schan: chan of string;
 
 # A dice roller, pass in args in format XdY and enjoy the rolls
 init(nil: ref Draw->Context, argv: list of string) {
 	sys = load Sys Sys->PATH;
 	arg = load Arg Arg->PATH;
+	schan = chan of string;
 
 	arg->init(argv);
 	arg->setusage("dice [-e] XdY... (default: 1d6)");
@@ -59,41 +62,50 @@ init(nil: ref Draw->Context, argv: list of string) {
 		}
 	}
 	
-	roll();
-}
+	# Kick off rolling threads
+	for(; toroll != nil; toroll = tl toroll) {
+		spawn roll(hd toroll);
+		ndice++;
+	}
 
-# Roll all of the die
-roll() {
-	random := load Random Random->PATH;
+	# Print all of the roll results
 	bufio := load Bufio Bufio->PATH;
 	Iobuf: import bufio;
 
 	out := bufio->open("/fd/1", bufio->OWRITE);
 
-	for(; toroll != nil; toroll = tl toroll) {
-		d := hd toroll;
-
-		str := sys->sprint("%dd%d: ", d.n, d.m);
-		out.write(array of byte str, len str);
-
-		count := d.n;
-		for(i := 0; i < count; i++) {
-			r := abs(random->randomint(random->ReallyRandom) % d.m) + 1;
-			if(exploding)
-				if(r == d.m)
-					count++;
-
-			str = sys->sprint("%d ", r);
-			out.write(array of byte str, len str);
+	while(ndice)
+		alt {
+			s := <-schan =>
+				out.write(array of byte s, len s);
+				ndice--;
+			* =>
+				sys->sleep(15);
 		}
-
-		str = sys->sprint("\n");
-		out.write(array of byte str, len str);
-		out.flush();
-	}
 
 	out.flush();
 	out.close();
+}
+
+# Roll a die
+roll(d: Die) {
+	random := load Random Random->PATH;
+
+	str := sys->sprint("%dd%d: ", d.n, d.m);
+
+	count := d.n;
+	for(i := 0; i < count; i++) {
+		r := abs(random->randomint(random->ReallyRandom) % d.m) + 1;
+		if(exploding)
+			if(r == d.m)
+				count++;
+
+		str += sys->sprint("%d ", r);
+	}
+
+	str += sys->sprint("\n");
+
+	schan <-= str;
 }
 
 # Return absolute value
