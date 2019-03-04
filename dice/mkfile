@@ -1,0 +1,9 @@
+</mkconfig
+
+DISBIN = $home/dis
+
+TARG=\
+	dice.dis
+
+</mkfiles/mkdis
+
