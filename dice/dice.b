@@ -85,11 +85,11 @@ roll() {
 
 			str = sys->sprint("%d ", r);
 			out.write(array of byte str, len str);
-			out.flush();
 		}
 
 		str = sys->sprint("\n");
 		out.write(array of byte str, len str);
+		out.flush();
 	}
 
 	out.flush();
