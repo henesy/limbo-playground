@@ -20,7 +20,6 @@ Die: adt {
 };
 
 exploding: int = 0;
-toroll: list of Die;
 ndice: int = 0;
 schan: chan of string;
 
@@ -45,7 +44,8 @@ init(nil: ref Draw->Context, argv: list of string) {
 	# Process args list
 	case len argv {
 	0 =>
-		toroll = Die(1, 6) :: toroll;
+		spawn roll(Die(1, 6));
+		ndice++;
 	* =>
 		for(; argv != nil; argv = tl argv) {
 			(c, fields) := sys->tokenize(hd argv, "d");
@@ -58,14 +58,9 @@ init(nil: ref Draw->Context, argv: list of string) {
 			if(int hd tl fields == 1 && exploding)
 				raise "exploding d1 is ∞";
 
-			toroll = Die(int hd fields, int hd tl fields) :: toroll;
+			spawn roll(Die(int hd fields, int hd tl fields));
+			ndice++;
 		}
-	}
-	
-	# Kick off rolling threads
-	for(; toroll != nil; toroll = tl toroll) {
-		spawn roll(hd toroll);
-		ndice++;
 	}
 
 	# Print all of the roll results
