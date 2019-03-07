@@ -27,7 +27,9 @@ schan: chan of string;
 init(nil: ref Draw->Context, argv: list of string) {
 	sys = load Sys Sys->PATH;
 	arg = load Arg Arg->PATH;
-	schan = chan of string;
+
+	# Buffer for the number of potential dice
+	schan = chan[len argv] of string;
 
 	arg->init(argv);
 	arg->setusage("dice [-e] XdY... (default: 1d6)");
