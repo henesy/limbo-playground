@@ -2,6 +2,9 @@ implement Docmd;
 
 include "sys.m";
 	sys: Sys;
+	pctl, fprint, fildes,
+	NEWFD, FORKFD, NEWNS, FORKNS, 
+	NODEVS, NEWENV, FORKENV, NEWPGRP: import sys;
 
 include "draw.m";
 
@@ -44,11 +47,16 @@ init(ctx: ref Draw->Context, argv: list of string) {
 	cmd := hd argv;
 	
 	if(chatty) {
-		sys->fprint(sys->fildes(2), "Argc = %d\nCmd = %s\n", argc, cmd);
-		sys->fprint(sys->fildes(2), "Args:\n");
+		fprint(fildes(2), "Argc = %d\nCmd = %s\n", argc, cmd);
+		fprint(fildes(2), "Args:\n");
 		for(a := argv; a != nil; a = tl a)
-			sys->fprint(sys->fildes(2), "\t%s\n", hd a);
+			fprint(fildes(2), "\t%s\n", hd a);
 	}
+	
+	pid := pctl(NEWFD, 0 :: 1 :: 2 :: nil);
+
+	if(chatty)
+		fprint(fildes(2), "Pid = %d\n", pid);
 	
 	c := load Command cmd;
 	c->init(ctx, argv);

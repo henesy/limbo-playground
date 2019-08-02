@@ -6,3 +6,8 @@ TARG=\
 	docmd.dis
 
 </mkfiles/mkdis
+
+demo:V: all
+	lc
+	docmd -D `{whatis touch} `{pwd}^/test
+	lc
