@@ -1,0 +1,8 @@
+</mkconfig
+
+DISBIN = /dis
+
+TARG=\
+	docmd.dis
+
+</mkfiles/mkdis
