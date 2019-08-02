@@ -8,6 +8,13 @@ TARG=\
 </mkfiles/mkdis
 
 demo:V: all
-	lc
-	docmd -D `{whatis touch} `{pwd}^/test
-	lc
+	ls
+	dir = `{pwd}
+	echo '=== start ==='
+	@{pctl forkns;
+		docmd -D -n ./namespace /dis/touch.dis /test;
+		# Drop commands here to play inside the namespace sandbox
+		# Try to run unmount(1) and then ls(1)! What happens?
+	}
+	echo '=== done ==='
+	ls

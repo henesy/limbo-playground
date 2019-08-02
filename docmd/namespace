@@ -1,0 +1,18 @@
+bind / /
+bind -ac '#U' /
+bind '#d' /fd
+bind /locale/US_Central /locale/timezone
+bind -a '#C' /
+bind '#d' /fd
+
+# Change /usr/seh to your $home path
+cd /usr/seh/repos/limbo-playground/docmd
+
+# Build the executables we need (lazy is all of them)
+bind /dis ./dis
+bind /module ./module
+bind /fd ./fd
+
+# Bind and move ourselves to /, we want this to ignore the rest of the environment
+bind -c ./ /
+cd /
