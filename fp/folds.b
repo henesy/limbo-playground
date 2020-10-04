@@ -41,14 +41,14 @@ digits(x: Integer): (Integer, array of Integer) {
 	}
 
 	if(len s < 2) {
-		y := Integer(int string x.n);
+		y := Integer(x.n - '0');
 		a := array[2] of {x, y};
 		return (Integer(0), a);
 	}
 
-	a₁ := Integer(int string s[0]);
-	b₁ := Integer(int string s[1]);
-	x₁ := Integer(int string s[2:]);
+	a₁ := Integer((int s[0]) - '0');
+	b₁ := Integer((int s[1]) - '0');
+	x₁ := Integer(int s[2:]);
 
 	set := array[2] of {a₁, b₁};
 
