@@ -10,6 +10,7 @@ Folds: module {
 	fold:	fn[T](f: ref fn(a, b: T): T, a₀: array of T): T;
 };
 
+
 sum(a, b: Integer): Integer {
 	return Integer(a.n + b.n);
 }
@@ -27,6 +28,48 @@ fold[T](f: ref fn(a, b: T): T, a₀: array of T): T {
 	return n;
 }
 
+# Terrible algorithm
+digits(x: Integer): (Integer, array of Integer) {
+	if(x.n == 0)
+		return (Integer(0), nil);
+
+	s := string x.n;
+
+	if(len s == 1) {
+		a := array[1] of { * => x };
+		return (Integer(0), a);
+	}
+
+	if(len s < 2) {
+		y := Integer(int string x.n);
+		a := array[2] of {x, y};
+		return (Integer(0), a);
+	}
+
+	a₁ := Integer(int string s[0]);
+	b₁ := Integer(int string s[1]);
+	x₁ := Integer(int string s[2:]);
+
+	set := array[2] of {a₁, b₁};
+
+	return (x₁, set);
+}
+
+unfold[T](f: ref fn(x: T): (T, array of T), x: T): array of T {
+	a: array of T;
+
+	return unfold_rec(f, x, a);
+}
+
+unfold_rec[T](f: ref fn(x: T): (T, array of T), x: T, a₀: array of T): array of T {
+	(y, a₁) := f(x);
+
+	if(len a₁ < 1)
+		return a₀;
+
+	return unfold_rec(f, y, cat(a₀, a₁));
+}
+
 
 init(nil: ref Draw->Context, nil: list of string) {
 	sys = load Sys Sys->PATH;
@@ -38,11 +81,19 @@ init(nil: ref Draw->Context, nil: list of string) {
 	aprint(a₀);
 
 	sys->print("%d\n", fold(sum, a₀).n);
+
+	aprint(unfold(digits, Integer(987456)));
 }
 
 cat[T](a₀, a₁: array of T): array of T {
-	if(a₀ == nil || a₁ == nil)
+	if(a₀ == nil && a₁ == nil)
 		return nil;
+
+	if(a₀ == nil)
+		return a₁;
+
+	if(a₁ == nil)
+		return a₀;
 
 	a₂ := array[len a₀ + len a₁] of T;
 
