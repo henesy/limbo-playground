@@ -60,7 +60,7 @@ init(nil: ref Draw->Context, argv: list of string) {
 	nflag := 0;
 
 	arg->init(argv);
-	arg->setusage("notcalled [-nalr] [-m mod.m] [-f file.b] dir/ ...");
+	arg->setusage("notcalled [-nalr] [-f file.b] dir/ ...");
 		while((c := arg->opt()) != 0)
 			case c {
 			'n' =>
@@ -77,8 +77,6 @@ init(nil: ref Draw->Context, argv: list of string) {
 				recurse = 1;
 			'f' =>
 				file = arg->earg();
-			'm' =>
-				modfile = arg->earg();
 			* =>
                  arg->usage();
              }
@@ -152,10 +150,23 @@ init(nil: ref Draw->Context, argv: list of string) {
 		# For each Limbo file
 		for(i := 0; i < n; i++) {
 			name := files[i].name;
+			path := dir + "/" + name;
+
+			# If we recurse - add the file if it's a dir
+			if(recurse && (files[i].mode & Sys->DMDIR)){
+				# todo - broken
+				in := 0;
+				for(l := dirs; l != nil; l = tl l)
+					if(hd l == path && name != dir)
+						in = 1;
+
+				if(!in){
+					dirs = lists->append(dirs, path);
+				}
+			}
+
 			if(len name < 3 || name[len name-2:] != ".b")
 				continue;
-
-			path := dir + "/" + name;
 
 			# For each function
 			for(l := funcs; l != nil; l = tl l){
@@ -207,7 +218,7 @@ defs(path: string): list of ref Function {
 
 		needs := array[] of {
 				"(",
-				};
+			};
 
 		unwanted := array[] of {
 				":=",
@@ -218,7 +229,15 @@ defs(path: string): list of ref Function {
 				"case",
 				"\"",
 				"fn",
-				};
+				",",
+			};
+
+		# Names we ignore 
+		# TODO - make these computed signatures?
+		ignored := array[] of {
+			"init",
+			"kill",
+		};
 
 		for(i := 0; i < len needs; i++)
 			if(! strings->contains(line, needs[i]))
@@ -241,12 +260,17 @@ defs(path: string): list of ref Function {
 			continue readlines;
 
 		# We ignore init() for posterity
-		if(fname == "init")
-			continue readlines;
+		for(i = 0; i < len ignored; i++)
+			if(fname == ignored[i])
+				continue readlines;
 
-		# Method
+		# Method Foo.bar
 		if(strings->contains(fname, "."))
 			(nil, fname) = strings->splitstrr(fname, ".");
+
+		# Polymorphics [T]
+		if(strings->contains(fname, "["))
+			(fname, nil) = strings->splitstrl(fname, "[");
 
 		dl = ref Function(no, line, fname, path, big 0) :: dl;
 	}
